@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>План внедрения ИС</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --text:#1d2330; --muted:#667085; --line:#e3e6eb;
+  --accent:#2f6fde; --accent-soft:#e7efff; --ok:#1f9d55; --ok-soft:#e3f6ea;
+  --warn:#c77700; --warn-soft:#fff3dc; --bad:#d23c3c; --bad-soft:#fde8e8;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151b; --card:#1b2029; --text:#e6e9ef; --muted:#98a2b3; --line:#2c3340;
+    --accent:#6b9cff; --accent-soft:#1e2a44; --ok:#4cc38a; --ok-soft:#163327;
+    --warn:#f0b04a; --warn-soft:#3a2e15; --bad:#ff6b6b; --bad-soft:#3d1d1d;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151b; --card:#1b2029; --text:#e6e9ef; --muted:#98a2b3; --line:#2c3340;
+  --accent:#6b9cff; --accent-soft:#1e2a44; --ok:#4cc38a; --ok-soft:#163327;
+  --warn:#f0b04a; --warn-soft:#3a2e15; --bad:#ff6b6b; --bad-soft:#3d1d1d;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0 8px}
+.top h1{font-size:18px;margin:0;flex:1;min-width:200px}
+.top h1 small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:0}
+nav button{border:0;background:none;color:var(--muted);padding:10px 14px;font:inherit;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+main{padding:20px 0 60px}
+section{display:none}
+section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:7px;padding:6px 12px;font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.icon{border:0;background:none;cursor:pointer;color:var(--muted);font-size:15px;padding:2px 5px;border-radius:5px}
+.icon:hover{background:var(--accent-soft);color:var(--text)}
+input,select,textarea{font:inherit;color:var(--text);background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;width:100%}
+input:hover,select:hover,textarea:hover{border-color:var(--line)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:var(--card)}
+textarea{resize:vertical;min-height:32px}
+select{cursor:pointer}
+select option{background:var(--card);color:var(--text)}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:bottom}
+.tbl td{padding:3px 2px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.num{width:42px;text-align:center;color:var(--muted);padding-top:9px!important}
+.passport{display:grid;grid-template-columns:220px 1fr;gap:2px 12px;align-items:start}
+.passport label{color:var(--muted);padding-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.kpi .v{font-size:26px;font-weight:700}
+.kpi .l{color:var(--muted);font-size:12px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.muted{background:var(--line);color:var(--muted)}
+tr.overdue td{background:var(--bad-soft)}
+tr.done td{opacity:.75}
+.err{color:var(--bad);font-size:12px;padding:0 6px}
+.issues li{margin:4px 0}
+.gantt{position:relative;min-width:720px}
+.g-row{display:grid;grid-template-columns:220px 1fr;align-items:center;height:30px}
+.g-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px}
+.g-track{position:relative;height:100%;border-left:1px solid var(--line)}
+.g-bar{position:absolute;top:7px;height:16px;border-radius:4px;background:var(--accent);min-width:4px}
+.g-bar.done{background:var(--ok)}
+.g-bar.overdue{background:var(--bad)}
+.g-bar.progress{background:var(--warn)}
+.g-head{height:24px;position:relative;font-size:11px;color:var(--muted)}
+.g-tick{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line);font-size:11px;color:var(--muted);padding-left:3px}
+.g-today{position:absolute;top:0;bottom:0;border-left:2px solid var(--bad);z-index:2}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.check{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
+.check input[type=checkbox]{width:18px;height:18px;margin-top:6px;flex:none;accent-color:var(--ok);cursor:pointer}
+.matrix{display:grid;grid-template-columns:90px repeat(3,1fr);gap:4px;font-size:12px}
+.matrix .h{color:var(--muted);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.matrix .c{min-height:64px;border-radius:6px;padding:6px;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
+.matrix .c b{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 7px;font-weight:600;cursor:default}
+.lvl-1{background:var(--ok-soft)} .lvl-2{background:var(--warn-soft)} .lvl-3{background:var(--bad-soft)}
+.auto{font-size:12px}
+.muted{color:var(--muted)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:760px){
+  .passport{grid-template-columns:1fr}
+  .passport label{padding-top:8px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .top h1{font-size:16px}
+}
+@media print{
+  header nav,.tools,.icon,.btn,.no-print{display:none!important}
+  header{position:static;border:0}
+  section{display:block!important;break-inside:avoid-page}
+  body{background:#fff;color:#000}
+  .card{box-shadow:none;border-color:#ccc}
+  input,select,textarea{border:0!important;padding:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1 id="hdrTitle">План внедрения ИС<small id="hdrSub"></small></h1>
+      <div class="tools">
+        <button class="btn" id="btnTheme" title="Сменить тему">◐</button>
+        <button class="btn" id="btnImportXlsx" title="Загрузить таблицу Excel по шаблону">Открыть Excel</button>
+        <button class="btn" id="btnExportXlsx" title="Сохранить всё в Excel (.xlsx)">Сохранить в Excel</button>
+        <button class="btn" id="btnExportJson" title="Сохранить резервную копию (.json)">Сохранить JSON</button>
+        <button class="btn" id="btnImportJson" title="Загрузить резервную копию (.json)">Открыть JSON</button>
+        <button class="btn" onclick="window.print()" title="Печать / сохранение в PDF">Печать</button>
+        <button class="btn danger" id="btnReset" title="Вернуть исходные данные шаблона">Сброс</button>
+      </div>
+    </div>
+    <nav id="tabs">
+      <button data-tab="dash" class="active">Обзор</button>
+      <button data-tab="plan">План внедрения</button>
+      <button data-tab="gantt">Диаграмма Ганта</button>
+      <button data-tab="launch">Запуск и возврат</button>
+      <button data-tab="risks">Риски</button>
+      <button data-tab="check">Проверка</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ОБЗОР -->
+  <section id="dash" class="active">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="card"><h2>Ближайшие этапы</h2><div id="nextStages"></div></div>
+      <div class="card"><h2>Проблемы плана</h2><ul class="issues" id="issues"></ul></div>
+    </div>
+    <div class="card"><h2>Паспорт системы</h2><div id="passportView" class="passport"></div></div>
+  </section>
+
+  <!-- ПЛАН -->
+  <section id="plan">
+    <div class="card">
+      <h2>Паспорт системы</h2>
+      <div class="passport" id="passport"></div>
+    </div>
+    <div class="card">
+      <h2>Этапы внедрения <span class="sp"></span><button class="btn primary sm" id="addStage">+ Этап</button></h2>
+      <div class="scroll">
+        <table class="tbl" id="stagesTbl">
+          <thead><tr>
+            <th>№</th><th style="min-width:150px">Этап</th><th style="min-width:200px">Содержание работ</th>
+            <th style="min-width:160px">Ответственный</th><th style="min-width:130px">Срок</th>
+            <th style="min-width:80px">Зависит от</th><th style="min-width:180px">Ожидаемый результат</th>
+            <th style="min-width:170px">Подтверждающий документ</th><th style="min-width:120px">Статус</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin:10px 0 0;font-size:12px">«Зависит от» — номера этапов через запятую (например <b>7, 8</b>) или «—». Срок этапа не может быть раньше сроков этапов, от которых он зависит.</p>
+    </div>
+  </section>
+
+  <!-- ГАНТ -->
+  <section id="gantt">
+    <div class="card">
+      <h2>Диаграмма Ганта</h2>
+      <p class="muted" style="margin-top:0;font-size:12px">Начало этапа = самый поздний срок этапов, от которых он зависит (для первого этапа — 7 дней до срока). Конец = срок этапа. Красная линия — сегодня.</p>
+      <div class="scroll"><div class="gantt" id="ganttBox"></div></div>
+      <div class="legend">
+        <span style="--c:var(--accent)">Не начат</span><span style="--c:var(--warn)">В работе</span>
+        <span style="--c:var(--ok)">Выполнен</span><span style="--c:var(--bad)">Просрочен</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЗАПУСК -->
+  <section id="launch">
+    <div class="grid3">
+      <div class="card"><h2>Критерии готовности к запуску <span class="sp"></span><button class="btn sm" data-add="readiness">+</button></h2><div id="readiness"></div></div>
+      <div class="card"><h2>Критерии успешной приёмки <span class="sp"></span><button class="btn sm" data-add="acceptance">+</button></h2><div id="acceptance"></div></div>
+      <div class="card"><h2>План возврата</h2><div id="rollback"></div></div>
+    </div>
+  </section>
+
+  <!-- РИСКИ -->
+  <section id="risks">
+    <div class="card">
+      <h2>Реестр рисков внедрения <span class="sp"></span><button class="btn primary sm" id="addRisk">+ Риск</button></h2>
+      <div class="scroll">
+        <table class="tbl" id="risksTbl">
+          <thead><tr>
+            <th>№</th><th style="min-width:200px">Риск</th><th style="min-width:110px">Вероятность</th><th style="min-width:110px">Влияние</th>
+            <th style="min-width:80px">Уровень</th><th style="min-width:200px">Предупреждающее действие</th><th style="min-width:200px">Действие при наступлении</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Матрица рисков</h2>
+      <div class="matrix" id="matrix"></div>
+      <p class="muted" style="font-size:12px;margin-bottom:0">В ячейках — номера рисков. Уровень = вероятность × влияние (1–9): 1–2 низкий, 3–4 средний, 6–9 высокий.</p>
+    </div>
+  </section>
+
+  <!-- ПРОВЕРКА -->
+  <section id="check">
+    <div class="card">
+      <h2>Лист самопроверки и взаимопроверки</h2>
+      <div class="scroll">
+        <table class="tbl" id="checkTbl">
+          <thead><tr><th style="min-width:200px">Критерий</th><th style="min-width:160px">Автопроверка</th><th style="min-width:110px">Самопроверка</th><th style="min-width:130px">Проверка другой пары</th><th style="min-width:200px">Комментарий</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Замечания <span class="sp"></span><button class="btn primary sm" id="addRemark">+ Замечание</button></h2>
+      <div class="scroll"><table class="tbl" id="remarksTbl">
+        <thead><tr><th>№</th><th style="min-width:240px">Замечание</th><th style="min-width:240px">Решение по замечанию</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+  </section>
+</main>
+
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="fileXlsx" accept=".xlsx,.xls" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   ДАННЫЕ ПО УМОЛЧАНИЮ — перенесены из «Копия Шаблон_плана_внедрения.xlsx»
+   ========================================================================= */
+const DEFAULT_DATA = {
+  passport: {
+    name: "GLPI — система учёта заявок в IT-отдел колледжа",
+    purpose: "Приём и учёт заявок на ремонт и настройку техники",
+    users: "Преподаватели и сотрудники колледжа, IT-отдел (3 чел.)",
+    goal: "Все заявки через систему, среднее время решения не более 2 рабочих дней",
+    scope: "Установка на сервер, настройка, импорт оборудования, обучение",
+    outOfScope: "Закупка нового оборудования, интеграция с 1С",
+    limits: "Бюджет 0 руб. (бесплатная версия), сервер колледжа, срок 2 месяца",
+    launch: "2026-12-01"
+  },
+  stages: [
+    {title:"Обследование", content:"Опрос сотрудников, сбор текущих заявок и проблем", owner:"Руководитель IT-отдела", due:"2026-10-05", deps:"—", result:"Список требований", doc:"Отчёт об обследовании", status:"todo"},
+    {title:"Подготовка сервера", content:"Выделить ВМ, установить ОС, СУБД и веб-сервер", owner:"Системный администратор", due:"2026-10-12", deps:"1", result:"Сервер готов к установке", doc:"Акт настройки сервера", status:"todo"},
+    {title:"Установка GLPI", content:"Установка и первичная настройка системы", owner:"Системный администратор", due:"2026-10-16", deps:"2", result:"GLPI открывается по адресу в локальной сети", doc:"Скриншот рабочей системы", status:"todo"},
+    {title:"Настройка", content:"Категории заявок, роли, уведомления на почту", owner:"Техник IT-отдела", due:"2026-10-23", deps:"3", result:"Заявка проходит путь от создания до закрытия", doc:"Инструкция по настройке", status:"todo"},
+    {title:"Импорт данных", content:"Загрузка списка ПК, принтеров и пользователей", owner:"Техник IT-отдела", due:"2026-10-30", deps:"4", result:"В базе всё оборудование колледжа", doc:"Выгрузка списка оборудования", status:"todo"},
+    {title:"Тестирование", content:"Тестовые заявки от 5 сотрудников", owner:"Руководитель IT-отдела", due:"2026-11-06", deps:"5", result:"Ошибки исправлены", doc:"Протокол тестирования", status:"todo"},
+    {title:"Обучение", content:"Короткое занятие и памятка для сотрудников", owner:"Техник IT-отдела", due:"2026-11-13", deps:"6", result:"Сотрудники умеют подать заявку", doc:"Памятка, лист присутствия", status:"todo"},
+    {title:"Резервное копирование", content:"Настроить ежедневный бэкап БД", owner:"Системный администратор", due:"2026-11-16", deps:"3", result:"Копия создаётся автоматически", doc:"Журнал резервных копий", status:"todo"},
+    {title:"Пробная эксплуатация", content:"Работа одного корпуса через систему", owner:"Руководитель IT-отдела", due:"2026-11-27", deps:"7, 8", result:"Замечания собраны и устранены", doc:"Отчёт о пробной работе", status:"todo"},
+    {title:"Запуск", content:"Перевод всех заявок в GLPI, приказ", owner:"Заместитель директора", due:"2026-12-01", deps:"9", result:"Система работает для всех", doc:"Приказ о вводе в эксплуатацию", status:"todo"}
+  ],
+  readiness: ["Сервер работает стабильно","Все роли настроены","Оборудование внесено в базу","Тестирование пройдено","Сотрудники обучены","Есть резервная копия"].map(t=>({text:t,done:false})),
+  acceptance: ["Заявку можно подать за 2 минуты","Уведомления приходят на почту","Нет критичных ошибок","90% заявок идут через систему","Отчёт по заявкам формируется","Пользователи не жалуются"].map(t=>({text:t,done:false})),
+  rollback: {
+    condition: "Сбой больше 4 часов",
+    decider: "Руководитель IT-отдела",
+    restore: "Старый порядок (журнал, почта)",
+    source: "Ежедневный бэкап на NAS",
+    time: "4 часа",
+    check: "Проверить приём заявок по почте"
+  },
+  risks: [
+    {risk:"Сотрудники не хотят пользоваться системой", prob:"Высокая", impact:"Высокое", prevent:"Обучение, простая памятка", action:"Принимать заявки только через GLPI"},
+    {risk:"Сбой сервера", prob:"Средняя", impact:"Высокое", prevent:"Бэкап, мониторинг", action:"Восстановить из копии"},
+    {risk:"Ошибки при импорте данных", prob:"Средняя", impact:"Среднее", prevent:"Проверка файла перед загрузкой", action:"Исправить данные вручную"},
+    {risk:"Не приходят уведомления", prob:"Средняя", impact:"Среднее", prevent:"Проверить настройки почты", action:"Временно звонить исполнителю"},
+    {risk:"Нехватка времени у IT-отдела", prob:"Высокая", impact:"Среднее", prevent:"Запас по срокам", action:"Перенести второстепенные этапы"},
+    {risk:"Потеря данных", prob:"Низкая", impact:"Высокое", prevent:"Ежедневный бэкап", action:"Восстановление из копии"}
+  ],
+  checks: [
+    "Цель измерима","Границы определены","Не менее 7 этапов","Этапы расположены логично","Указаны ответственные",
+    "Сроки реалистичны","Зависимости не нарушены","Результаты проверяемы","Не менее 5 рисков","Есть план возврата","Определены критерии приёмки"
+  ].map(c=>({criterion:c, self:"Да", peer:"", comment:""})),
+  remarks: [{remark:"",solution:""},{remark:"",solution:""}]
+};
+
+const PASSPORT_FIELDS = [
+  ["name","Название системы"],["purpose","Назначение"],["users","Целевые пользователи"],["goal","Цель внедрения"],
+  ["scope","Что входит в работы"],["outOfScope","Что не входит в работы"],["limits","Ограничения"],["launch","Дата планируемого запуска"]
+];
+const ROLLBACK_FIELDS = [
+  ["condition","Условие запуска"],["decider","Кто принимает решение"],["restore","Что восстанавливаем"],
+  ["source","Источник копии"],["time","Допустимое время"],["check","Проверка после возврата"]
+];
+const STATUSES = {todo:"Не начат", progress:"В работе", done:"Выполнен"};
+const PROBS = ["Низкая","Средняя","Высокая"];
+const IMPACTS = ["Низкое","Среднее","Высокое"];
+const STORAGE_KEY = "plan-vnedreniya-v1";
+
+/* ============================ Хранилище ============================ */
+const clone = o => JSON.parse(JSON.stringify(o));
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return normalize(JSON.parse(raw));
+  }catch(e){}
+  return clone(DEFAULT_DATA);
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function normalize(d){
+  const base = clone(DEFAULT_DATA);
+  const out = Object.assign(base, d || {});
+  out.passport = Object.assign(clone(DEFAULT_DATA.passport), d.passport || {});
+  out.rollback = Object.assign(clone(DEFAULT_DATA.rollback), d.rollback || {});
+  ["stages","readiness","acceptance","risks","checks","remarks"].forEach(k=>{ if(!Array.isArray(out[k])) out[k] = clone(DEFAULT_DATA[k]); });
+  out.stages.forEach(s=>{ if(!STATUSES[s.status]) s.status="todo"; });
+  return out;
+}
+
+/* ============================ Даты ============================ */
+const DAY = 86400000;
+function parseDate(s){
+  if(!s) return null;
+  const d = new Date(s + "T00:00:00");
+  return isNaN(d) ? null : d;
+}
+function fmt(s){
+  const d = parseDate(s);
+  return d ? d.toLocaleDateString("ru-RU") : "—";
+}
+function today(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function toISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+// «05.10.2026» / Date / серийный номер Excel → «2026-10-05»
+function anyToISO(v){
+  if(v == null || v === "") return "";
+  if(v instanceof Date && !isNaN(v)) return toISO(v);
+  if(typeof v === "number"){ const d = new Date(Math.round((v - 25569) * DAY)); return toISO(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if(m) return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return m[1]+"-"+m[2]+"-"+m[3];
+  return "";
+}
+function plural(n, one, few, many){
+  const a = Math.abs(n) % 100, b = a % 10;
+  if(a > 10 && a < 20) return many;
+  if(b > 1 && b < 5) return few;
+  if(b === 1) return one;
+  return many;
+}
+
+/* ============================ Анализ плана ============================ */
+function parseDeps(s){
+  if(!s) return [];
+  return String(s).split(/[,;\s]+/).map(x=>x.trim()).filter(x=>/^\d+$/.test(x)).map(Number);
+}
+function isOverdue(s){
+  const d = parseDate(s.due);
+  return s.status !== "done" && d && d < today();
+}
+// Возвращает массив ошибок по каждому этапу и общий список проблем
+function analyze(){
+  const st = state.stages;
+  const perStage = st.map(()=>[]);
+  const issues = [];
+  st.forEach((s,i)=>{
+    const n = i+1;
+    if(!s.title.trim()) perStage[i].push("Не указано название");
+    if(!s.owner.trim()) perStage[i].push("Не указан ответственный");
+    if(!parseDate(s.due)) perStage[i].push("Не указан срок");
+    if(!s.result.trim()) perStage[i].push("Не указан результат");
+    parseDeps(s.deps).forEach(d=>{
+      if(d < 1 || d > st.length) perStage[i].push("Нет этапа №"+d);
+      else if(d === n) perStage[i].push("Этап зависит сам от себя");
+      else{
+        const a = parseDate(st[d-1].due), b = parseDate(s.due);
+        if(a && b && a > b) perStage[i].push("Срок раньше, чем у этапа №"+d+" ("+fmt(st[d-1].due)+")");
+        if(s.status !== "todo" && st[d-1].status !== "done") perStage[i].push("Этап №"+d+" ещё не выполнен");
+      }
+    });
+    if(isOverdue(s)) perStage[i].push("Просрочен");
+  });
+  // циклы зависимостей
+  const visiting = new Set(), visited = new Set();
+  let cycle = false;
+  const dfs = i => {
+    if(visiting.has(i)){ cycle = true; return; }
+    if(visited.has(i)) return;
+    visiting.add(i);
+    parseDeps(st[i].deps).forEach(d=>{ if(d>=1 && d<=st.length && d-1!==i) dfs(d-1); });
+    visiting.delete(i); visited.add(i);
+  };
+  st.forEach((_,i)=>dfs(i));
+  if(cycle) issues.push("Циклическая зависимость между этапами");
+  const launch = parseDate(state.passport.launch);
+  st.forEach((s,i)=>{
+    perStage[i].forEach(e=>issues.push("Этап №"+(i+1)+" «"+(s.title||"без названия")+"»: "+e));
+    const d = parseDate(s.due);
+    if(launch && d && d > launch) issues.push("Этап №"+(i+1)+" заканчивается позже даты запуска ("+fmt(state.passport.launch)+")");
+  });
+  return {perStage, issues, cycle};
+}
+
+function riskScore(r){
+  const p = PROBS.indexOf(r.prob)+1, im = IMPACTS.indexOf(r.impact)+1;
+  return p && im ? p*im : 0;
+}
+function riskLevel(score){
+  if(!score) return ["—","muted"];
+  if(score >= 6) return ["Высокий","bad"];
+  if(score >= 3) return ["Средний","warn"];
+  return ["Низкий","ok"];
+}
+
+// Автоматическая проверка критериев листа «Проверка»
+function autoCheck(criterion, a){
+  const p = state.passport, st = state.stages;
+  const filledRisks = state.risks.filter(r=>r.risk.trim()).length;
+  const rules = {
+    "Цель измерима": () => /\d/.test(p.goal) ? [true,"В цели есть число"] : [false,"В цели нет числового показателя"],
+    "Границы определены": () => p.scope.trim() && p.outOfScope.trim() ? [true,"Заполнено «входит / не входит»"] : [false,"Заполните границы работ"],
+    "Не менее 7 этапов": () => [st.length >= 7, "Этапов: "+st.length],
+    "Этапы расположены логично": () => {
+      const bad = st.findIndex((s,i)=>parseDeps(s.deps).some(d=>d>i+1));
+      return bad < 0 && !a.cycle ? [true,"Этапы зависят только от предыдущих"] : [false,"Этап №"+(bad+1)+" зависит от более позднего"];
+    },
+    "Указаны ответственные": () => { const n = st.filter(s=>!s.owner.trim()).length; return [n===0, n ? "Без ответственного: "+n : "У всех этапов есть"]; },
+    "Сроки реалистичны": () => {
+      const ds = st.map(s=>parseDate(s.due)).filter(Boolean);
+      if(ds.length !== st.length) return [false,"Не у всех этапов есть срок"];
+      const launch = parseDate(p.launch);
+      if(launch && ds.some(d=>d>launch)) return [false,"Есть этапы после запуска"];
+      return [true,"Все сроки до даты запуска"];
+    },
+    "Зависимости не нарушены": () => {
+      const n = a.perStage.filter(e=>e.some(x=>/Срок раньше|Нет этапа|сам от себя/.test(x))).length;
+      return [n===0 && !a.cycle, n ? "Нарушений: "+n : (a.cycle ? "Есть цикл" : "Нарушений нет")];
+    },
+    "Результаты проверяемы": () => { const n = st.filter(s=>!s.result.trim()||!s.doc.trim()).length; return [n===0, n ? "Без результата/документа: "+n : "У всех есть результат и документ"]; },
+    "Не менее 5 рисков": () => [filledRisks >= 5, "Рисков: "+filledRisks],
+    "Есть план возврата": () => { const n = ROLLBACK_FIELDS.filter(([k])=>!String(state.rollback[k]||"").trim()).length; return [n===0, n ? "Не заполнено полей: "+n : "Все поля заполнены"]; },
+    "Определены критерии приёмки": () => { const n = state.acceptance.filter(c=>c.text.trim()).length; return [n>0, "Критериев: "+n]; }
+  };
+  const f = rules[criterion.trim()];
+  return f ? f() : null;
+}
+
+/* ============================ Отрисовка ============================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderAll(){
+  renderHeader(); renderDash(); renderPassport(); renderStages(); renderGantt();
+  renderLaunch(); renderRisks(); renderChecks(); renderRemarks();
+}
+function renderHeader(){
+  $("#hdrTitle").firstChild.nodeValue = "План внедрения: " + (state.passport.name.split("—")[0].trim() || "ИС");
+  $("#hdrSub").textContent = state.passport.name;
+  document.title = "План внедрения ИС";
+}
+
+function renderDash(){
+  const st = state.stages, a = analyze();
+  const done = st.filter(s=>s.status==="done").length;
+  const pct = st.length ? Math.round(done/st.length*100) : 0;
+  const overdue = st.filter(isOverdue).length;
+  const launch = parseDate(state.passport.launch);
+  const days = launch ? Math.round((launch - today())/DAY) : null;
+  const highRisks = state.risks.filter(r=>riskScore(r)>=6).length;
+  const ready = state.readiness.filter(c=>c.done).length;
+  $("#kpis").innerHTML = `
+    <div class="kpi"><div class="l">Выполнено этапов</div><div class="v">${done} / ${st.length}</div><div class="bar"><i style="width:${pct}%"></i></div></div>
+    <div class="kpi"><div class="l">До запуска (${fmt(state.passport.launch)})</div><div class="v">${days==null?"—":days<0?"запущено":days+" "+plural(days,"день","дня","дней")}</div></div>
+    <div class="kpi"><div class="l">Просрочено этапов</div><div class="v" style="color:${overdue?"var(--bad)":"var(--ok)"}">${overdue}</div></div>
+    <div class="kpi"><div class="l">Высоких рисков</div><div class="v" style="color:${highRisks?"var(--warn)":"var(--ok)"}">${highRisks}</div></div>
+    <div class="kpi"><div class="l">Готовность к запуску</div><div class="v">${ready} / ${state.readiness.length}</div><div class="bar"><i style="width:${state.readiness.length?ready/state.readiness.length*100:0}%"></i></div></div>`;
+
+  const upcoming = st.map((s,i)=>({s,i})).filter(x=>x.s.status!=="done").sort((x,y)=>(x.s.due||"9").localeCompare(y.s.due||"9")).slice(0,5);
+  $("#nextStages").innerHTML = upcoming.length ? `<table class="tbl"><tbody>${upcoming.map(({s,i})=>`
+    <tr><td class="num">${i+1}</td><td style="padding:8px 6px"><b>${esc(s.title)}</b><div class="muted">${esc(s.owner)}</div></td>
+    <td style="padding:8px 6px;white-space:nowrap">${fmt(s.due)}<br>${isOverdue(s)?'<span class="pill bad">просрочен</span>':`<span class="pill ${s.status==="progress"?"warn":"muted"}">${STATUSES[s.status]}</span>`}</td></tr>`).join("")}</tbody></table>`
+    : '<p class="muted">Все этапы выполнены 🎉</p>';
+
+  $("#issues").innerHTML = a.issues.length ? a.issues.map(t=>`<li>${esc(t)}</li>`).join("") : '<li style="list-style:none;margin-left:-20px"><span class="pill ok">Проблем не найдено</span></li>';
+
+  $("#passportView").innerHTML = PASSPORT_FIELDS.map(([k,l])=>`<label>${l}</label><div style="padding:6px 0">${esc(k==="launch"?fmt(state.passport[k]):state.passport[k])||"—"}</div>`).join("");
+}
+
+function renderPassport(){
+  $("#passport").innerHTML = PASSPORT_FIELDS.map(([k,l])=>`<label for="p_${k}">${l}</label>${
+    k==="launch" ? `<input type="date" id="p_${k}" data-p="${k}" value="${esc(state.passport[k])}" style="max-width:200px">`
+                 : `<textarea rows="1" id="p_${k}" data-p="${k}">${esc(state.passport[k])}</textarea>`}`).join("");
+}
+
+function renderStages(){
+  const a = analyze();
+  $("#stagesTbl tbody").innerHTML = state.stages.map((s,i)=>{
+    const cls = isOverdue(s) ? "overdue" : s.status==="done" ? "done" : "";
+    const errs = a.perStage[i].filter(e=>e!=="Просрочен");
+    return `<tr class="${cls}" data-i="${i}">
+      <td class="num">${i+1}</td>
+      <td><textarea rows="1" data-f="title">${esc(s.title)}</textarea></td>
+      <td><textarea rows="1" data-f="content">${esc(s.content)}</textarea></td>
+      <td><textarea rows="1" data-f="owner">${esc(s.owner)}</textarea></td>
+      <td><input type="date" data-f="due" value="${esc(s.due)}"></td>
+      <td><input data-f="deps" value="${esc(s.deps)}"></td>
+      <td><textarea rows="1" data-f="result">${esc(s.result)}</textarea></td>
+      <td><textarea rows="1" data-f="doc">${esc(s.doc)}</textarea></td>
+      <td><select data-f="status">${Object.entries(STATUSES).map(([k,v])=>`<option value="${k}" ${s.status===k?"selected":""}>${v}</option>`).join("")}</select>
+          ${errs.length?`<div class="err" title="${esc(errs.join("\n"))}">⚠ ${esc(errs[0])}${errs.length>1?" (+"+(errs.length-1)+")":""}</div>`:""}</td>
+      <td style="white-space:nowrap"><button class="icon" data-act="up" title="Выше">↑</button><button class="icon" data-act="down" title="Ниже">↓</button><button class="icon" data-act="del" title="Удалить">✕</button></td>
+    </tr>`;
+  }).join("");
+  autosize($("#stagesTbl"));
+}
+
+function renderGantt(){
+  const st = state.stages;
+  const box = $("#ganttBox");
+  const bars = st.map((s,i)=>{
+    const end = parseDate(s.due);
+    if(!end) return null;
+    const depEnds = parseDeps(s.deps).map(d=>st[d-1] && parseDate(st[d-1].due)).filter(Boolean);
+    let start = depEnds.length ? new Date(Math.max(...depEnds)) : new Date(end - 7*DAY);
+    if(start > end) start = end;
+    return {s,i,start,end};
+  });
+  const valid = bars.filter(Boolean);
+  if(!valid.length){ box.innerHTML = '<p class="muted">Укажите сроки этапов, чтобы построить диаграмму.</p>'; return; }
+  let min = new Date(Math.min(...valid.map(b=>b.start))), max = new Date(Math.max(...valid.map(b=>b.end)));
+  const launch = parseDate(state.passport.launch); if(launch && launch > max) max = launch;
+  min = new Date(min - 2*DAY); max = new Date(+max + 2*DAY);
+  const span = max - min;
+  const pos = d => ((d - min) / span * 100).toFixed(2) + "%";
+  // недельные метки (по понедельникам)
+  let ticks = "", t = new Date(min); t.setDate(t.getDate() + ((8 - t.getDay()) % 7));
+  for(; t <= max; t = new Date(+t + 7*DAY)) ticks += `<div class="g-tick" style="left:${pos(t)}">${t.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"})}</div>`;
+  const now = today();
+  const todayLine = now >= min && now <= max ? `<div class="g-today" style="left:${pos(now)}" title="Сегодня"></div>` : "";
+  box.innerHTML = `
+    <div class="g-row"><div></div><div class="g-head">${ticks}${todayLine}</div></div>
+    ${bars.map((b,i)=>{
+      const s = st[i];
+      if(!b) return `<div class="g-row"><div class="g-name">${i+1}. ${esc(s.title)}</div><div class="g-track"><span class="muted" style="font-size:12px;padding-left:6px">нет срока</span></div></div>`;
+      const cls = isOverdue(s) ? "overdue" : s.status;
+      const w = Math.max((b.end - b.start)/span*100, .6);
+      return `<div class="g-row"><div class="g-name" title="${esc(s.title)}">${i+1}. ${esc(s.title)}</div>
+        <div class="g-track">${ticks.replace(/>[^<]*</g,"><")}${todayLine}
+          <div class="g-bar ${cls}" style="left:${pos(b.start)};width:${w}%" title="${esc(s.title)}: ${b.start.toLocaleDateString("ru-RU")} — ${b.end.toLocaleDateString("ru-RU")}\n${esc(s.owner)}"></div></div></div>`;
+    }).join("")}`;
+}
+
+function renderLaunch(){
+  ["readiness","acceptance"].forEach(k=>{
+    $("#"+k).innerHTML = state[k].map((c,i)=>`<div class="check" data-list="${k}" data-i="${i}">
+      <input type="checkbox" data-f="done" ${c.done?"checked":""} title="Выполнено">
+      <textarea rows="1" data-f="text">${esc(c.text)}</textarea>
+      <button class="icon" data-act="del" title="Удалить">✕</button></div>`).join("") || '<p class="muted">Нет критериев</p>';
+    autosize($("#"+k));
+  });
+  $("#rollback").innerHTML = ROLLBACK_FIELDS.map(([k,l])=>`<div style="margin-bottom:8px"><div class="muted" style="font-size:12px;padding-left:6px">${l}</div><textarea rows="1" data-r="${k}">${esc(state.rollback[k])}</textarea></div>`).join("");
+  autosize($("#rollback"));
+}
+
+function renderRisks(){
+  $("#risksTbl tbody").innerHTML = state.risks.map((r,i)=>{
+    const sc = riskScore(r), [lvl, cls] = riskLevel(sc);
+    return `<tr data-i="${i}">
+      <td class="num">${i+1}</td>
+      <td><textarea rows="1" data-f="risk">${esc(r.risk)}</textarea></td>
+      <td><select data-f="prob"><option value=""></option>${PROBS.map(v=>`<option ${r.prob===v?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td><select data-f="impact"><option value=""></option>${IMPACTS.map(v=>`<option ${r.impact===v?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td style="padding-top:8px"><span class="pill ${cls}">${lvl}${sc?" ("+sc+")":""}</span></td>
+      <td><textarea rows="1" data-f="prevent">${esc(r.prevent)}</textarea></td>
+      <td><textarea rows="1" data-f="action">${esc(r.action)}</textarea></td>
+      <td><button class="icon" data-act="del" title="Удалить">✕</button></td></tr>`;
+  }).join("");
+  autosize($("#risksTbl"));
+  // матрица: строки — вероятность (сверху высокая), столбцы — влияние
+  let html = `<div class="h"></div>${IMPACTS.map(v=>`<div class="h">Влияние:<br>${v}</div>`).join("")}`;
+  [...PROBS].reverse().forEach(p=>{
+    html += `<div class="h">Вероятность:<br>${p}</div>`;
+    IMPACTS.forEach(im=>{
+      const sc = (PROBS.indexOf(p)+1)*(IMPACTS.indexOf(im)+1);
+      const lvl = sc>=6?3:sc>=3?2:1;
+      const items = state.risks.map((r,i)=>({r,i})).filter(x=>x.r.prob===p && x.r.impact===im);
+      html += `<div class="c lvl-${lvl}">${items.map(x=>`<b title="${esc(x.r.risk)}">${x.i+1}</b>`).join("")}</div>`;
+    });
+  });
+  $("#matrix").innerHTML = html;
+}
+
+function renderChecks(){
+  const a = analyze();
+  const opts = v => ["","Да","Нет","Частично"].map(o=>`<option ${v===o?"selected":""}>${o}</option>`).join("");
+  $("#checkTbl tbody").innerHTML = state.checks.map((c,i)=>{
+    const ac = autoCheck(c.criterion, a);
+    const mismatch = ac && c.self === "Да" && !ac[0];
+    return `<tr data-i="${i}">
+      <td><textarea rows="1" data-f="criterion">${esc(c.criterion)}</textarea></td>
+      <td class="auto" style="padding-top:8px">${ac?`<span class="pill ${ac[0]?"ok":"bad"}">${ac[0]?"✓ OK":"✕ Нет"}</span> <span class="muted">${esc(ac[1])}</span>`:'<span class="muted">—</span>'}</td>
+      <td><select data-f="self">${opts(c.self)}</select>${mismatch?'<div class="err">Не совпадает с автопроверкой</div>':""}</td>
+      <td><select data-f="peer">${opts(c.peer)}</select></td>
+      <td><textarea rows="1" data-f="comment">${esc(c.comment)}</textarea></td></tr>`;
+  }).join("");
+  autosize($("#checkTbl"));
+}
+
+function renderRemarks(){
+  $("#remarksTbl tbody").innerHTML = state.remarks.map((r,i)=>`<tr data-i="${i}">
+    <td class="num">${i+1}</td>
+    <td><textarea rows="1" data-f="remark" placeholder="Замечание ${i+1}">${esc(r.remark)}</textarea></td>
+    <td><textarea rows="1" data-f="solution" placeholder="Решение по замечанию ${i+1}">${esc(r.solution)}</textarea></td>
+    <td><button class="icon" data-act="del" title="Удалить">✕</button></td></tr>`).join("");
+  autosize($("#remarksTbl"));
+}
+
+function autosize(root){
+  root.querySelectorAll("textarea").forEach(t=>{ t.style.height="auto"; t.style.height=(t.scrollHeight+2)+"px"; });
+}
+document.addEventListener("input", e=>{ if(e.target.tagName==="TEXTAREA"){ e.target.style.height="auto"; e.target.style.height=(e.target.scrollHeight+2)+"px"; } });
+
+/* ============================ События ============================ */
+// Вкладки
+$("#tabs").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-tab]"); if(!b) return;
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active", x===b));
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("active", s.id===b.dataset.tab));
+  try{ localStorage.setItem(STORAGE_KEY+"-tab", b.dataset.tab); }catch(err){}
+  if(b.dataset.tab==="dash") renderDash();
+  if(b.dataset.tab==="gantt") renderGantt();
+  if(b.dataset.tab==="check") renderChecks();
+  // textarea в скрытой вкладке имеют нулевую высоту — пересчитываем
+  autosize($("#"+b.dataset.tab));
+});
+
+// Изменение полей (change — для дат/списков/чекбоксов, input — для текста)
+function onEdit(e, isChange){
+  const el = e.target;
+  if(el.dataset.p){ state.passport[el.dataset.p] = el.value; save(); if(isChange){ renderHeader(); renderGantt(); renderStages(); } return; }
+  if(el.dataset.r){ state.rollback[el.dataset.r] = el.value; save(); return; }
+  const f = el.dataset.f; if(!f) return;
+  const listRow = el.closest("[data-list]");
+  if(listRow){
+    const item = state[listRow.dataset.list][+listRow.dataset.i];
+    item[f] = el.type==="checkbox" ? el.checked : el.value; save(); return;
+  }
+  const tr = el.closest("tr[data-i]"); if(!tr) return;
+  const i = +tr.dataset.i, tbl = tr.closest("table").id;
+  const map = {stagesTbl:"stages", risksTbl:"risks", checkTbl:"checks", remarksTbl:"remarks"};
+  state[map[tbl]][i][f] = el.value; save();
+  if(isChange){
+    if(tbl==="stagesTbl") renderStages();
+    if(tbl==="risksTbl") renderRisks();
+    if(tbl==="checkTbl") renderChecks();
+  }
+}
+document.addEventListener("input", e=>onEdit(e,false));
+document.addEventListener("change", e=>onEdit(e,true));
+
+// Кнопки в строках
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const listRow = b.closest("[data-list]");
+  if(listRow){ state[listRow.dataset.list].splice(+listRow.dataset.i,1); save(); renderLaunch(); return; }
+  const tr = b.closest("tr[data-i]"); const i = +tr.dataset.i;
+  const tbl = tr.closest("table").id;
+  if(tbl==="stagesTbl"){
+    if(b.dataset.act==="del"){ if(!confirm("Удалить этап №"+(i+1)+"?")) return; removeStage(i); }
+    if(b.dataset.act==="up" && i>0) moveStage(i, i-1);
+    if(b.dataset.act==="down" && i<state.stages.length-1) moveStage(i, i+1);
+    save(); renderStages(); return;
+  }
+  if(tbl==="risksTbl"){ if(!confirm("Удалить риск №"+(i+1)+"?")) return; state.risks.splice(i,1); save(); renderRisks(); }
+  if(tbl==="remarksTbl"){ state.remarks.splice(i,1); save(); renderRemarks(); }
+});
+
+// Перенумерация зависимостей при перемещении/удалении этапов
+function remapDeps(fn){
+  state.stages.forEach(s=>{
+    const raw = String(s.deps||"").trim();
+    const deps = parseDeps(raw);
+    if(!deps.length) return;
+    const nd = deps.map(fn).filter(x=>x!=null);
+    s.deps = nd.length ? nd.join(", ") : "—";
+  });
+}
+function moveStage(from, to){
+  const [s] = state.stages.splice(from,1); state.stages.splice(to,0,s);
+  const a = from+1, b = to+1;
+  remapDeps(d => d===a ? b : d===b ? a : d);
+}
+function removeStage(i){
+  const n = i+1;
+  state.stages.splice(i,1);
+  remapDeps(d => d===n ? null : d>n ? d-1 : d);
+}
+
+$("#addStage").onclick = ()=>{
+  const last = state.stages[state.stages.length-1];
+  const due = last && parseDate(last.due) ? toISO(new Date(+parseDate(last.due)+7*DAY)) : toISO(today());
+  state.stages.push({title:"Новый этап",content:"",owner:"",due,deps:last?String(state.stages.length):"—",result:"",doc:"",status:"todo"});
+  save(); renderStages();
+};
+$("#addRisk").onclick = ()=>{ state.risks.push({risk:"",prob:"Средняя",impact:"Среднее",prevent:"",action:""}); save(); renderRisks(); };
+$("#addRemark").onclick = ()=>{ state.remarks.push({remark:"",solution:""}); save(); renderRemarks(); };
+document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ state[b.dataset.add].push({text:"",done:false}); save(); renderLaunch(); });
+
+$("#btnReset").onclick = ()=>{
+  if(!confirm("Вернуть исходные данные из шаблона? Все изменения будут потеряны.")) return;
+  state = clone(DEFAULT_DATA); save(); renderAll(); toast("Данные сброшены к шаблону");
+};
+
+// Тема
+function applyTheme(t){ if(t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+try{ applyTheme(localStorage.getItem(STORAGE_KEY+"-theme")); }catch(e){}
+$("#btnTheme").onclick = ()=>{
+  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur==="dark" ? "light" : "dark";
+  applyTheme(next); try{ localStorage.setItem(STORAGE_KEY+"-theme", next); }catch(e){}
+};
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2500); }
+function download(name, blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
+const stamp = () => toISO(new Date());
+
+/* ============================ JSON ============================ */
+$("#btnExportJson").onclick = ()=> download("plan-vnedreniya-"+stamp()+".json", new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));
+$("#btnImportJson").onclick = ()=> $("#fileJson").click();
+$("#fileJson").onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{ state = normalize(JSON.parse(await f.text())); save(); renderAll(); toast("Загружено: "+f.name); }
+  catch(err){ alert("Не удалось прочитать JSON: "+err.message); }
+  e.target.value = "";
+};
+
+/* ============================ Excel (SheetJS) ============================ */
+let xlsxPromise = null;
+function loadXLSX(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(!xlsxPromise) xlsxPromise = new Promise((res,rej)=>{
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = ()=>res(window.XLSX);
+    s.onerror = ()=>{ xlsxPromise=null; rej(new Error("Нет доступа к интернету — библиотека Excel не загрузилась. Используйте JSON.")); };
+    document.head.appendChild(s);
+  });
+  return xlsxPromise;
+}
+
+$("#btnExportXlsx").onclick = async ()=>{
+  try{
+    const XLSX = await loadXLSX();
+    const p = state.passport, r = state.rollback;
+    // Лист 1 — в той же раскладке, что и исходный шаблон
+    const A = [["ПЛАН ВНЕДРЕНИЯ ИНФОРМАЦИОННОЙ СИСТЕМЫ"],[]];
+    PASSPORT_FIELDS.forEach(([k,l])=>A.push([l, k==="launch"?fmt(p[k]):p[k]]));
+    A.push([]);
+    A.push(["№","Этап","Содержание работ","Ответственный","Срок","Зависит от","Ожидаемый результат","Подтверждающий документ","Статус"]);
+    state.stages.forEach((s,i)=>A.push([i+1,s.title,s.content,s.owner,fmt(s.due),s.deps,s.result,s.doc,STATUSES[s.status]]));
+    A.push([]);
+    A.push(["Критерии готовности к запуску","","","Критерии успешной приёмки","","","План возврата"]);
+    const n = Math.max(state.readiness.length, state.acceptance.length, ROLLBACK_FIELDS.length);
+    for(let i=0;i<n;i++){
+      const rd = state.readiness[i], ac = state.acceptance[i], rb = ROLLBACK_FIELDS[i];
+      A.push([rd?i+1:"", rd?rd.text+(rd.done?" ✓":""):"", "", ac?i+1:"", ac?ac.text+(ac.done?" ✓":""):"", "", rb?rb[1]:"", rb?r[rb[0]]:""]);
+    }
+    const ws1 = XLSX.utils.aoa_to_sheet(A);
+    ws1["!cols"] = [{wch:28},{wch:28},{wch:36},{wch:26},{wch:12},{wch:11},{wch:34},{wch:30},{wch:12}];
+    ws1["!merges"] = [{s:{r:0,c:0},e:{r:0,c:7}}];
+
+    const R = [["РЕЕСТР РИСКОВ ВНЕДРЕНИЯ"],[],["№","Риск","Вероятность","Влияние","Предупреждающее действие","Действие при наступлении","Уровень"]];
+    state.risks.forEach((x,i)=>R.push([i+1,x.risk,x.prob,x.impact,x.prevent,x.action,riskLevel(riskScore(x))[0]]));
+    const ws2 = XLSX.utils.aoa_to_sheet(R);
+    ws2["!cols"] = [{wch:5},{wch:40},{wch:13},{wch:13},{wch:34},{wch:34},{wch:11}];
+    ws2["!merges"] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+
+    const C = [["ЛИСТ САМОПРОВЕРКИ И ВЗАИМОПРОВЕРКИ"],[],["Критерий","Самопроверка","Проверка другой пары","Комментарий"]];
+    state.checks.forEach(c=>C.push([c.criterion,c.self,c.peer,c.comment]));
+    C.push([]);
+    state.remarks.forEach((m,i)=>{ C.push(["Замечание "+(i+1), m.remark]); C.push(["Решение по замечанию "+(i+1), m.solution]); });
+    const ws3 = XLSX.utils.aoa_to_sheet(C);
+    ws3["!cols"] = [{wch:32},{wch:16},{wch:22},{wch:40}];
+    ws3["!merges"] = [{s:{r:0,c:0},e:{r:0,c:3}}];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws1, "План внедрения");
+    XLSX.utils.book_append_sheet(wb, ws2, "Риски");
+    XLSX.utils.book_append_sheet(wb, ws3, "Проверка");
+    XLSX.writeFile(wb, "План_внедрения_"+stamp()+".xlsx");
+  }catch(err){ alert(err.message); }
+};
+
+$("#btnImportXlsx").onclick = ()=> $("#fileXlsx").click();
+$("#fileXlsx").onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const XLSX = await loadXLSX();
+    const wb = XLSX.read(await f.arrayBuffer(), {type:"array", cellDates:true});
+    state = normalize(parseWorkbook(XLSX, wb)); save(); renderAll();
+    toast("Загружено из Excel: "+f.name);
+  }catch(err){ alert("Не удалось прочитать Excel: "+err.message); }
+  e.target.value = "";
+};
+
+// Разбор книги, оформленной по шаблону «Шаблон_плана_внедрения.xlsx»
+function parseWorkbook(XLSX, wb){
+  const rows = name => {
+    const key = wb.SheetNames.find(n=>n.toLowerCase().includes(name));
+    return key ? XLSX.utils.sheet_to_json(wb.Sheets[key], {header:1, defval:"", raw:true}) : null;
+  };
+  const S = v => v instanceof Date ? v.toLocaleDateString("ru-RU") : String(v ?? "").trim();
+  const out = clone(DEFAULT_DATA);
+  const plan = rows("план") || XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:"", raw:true});
+
+  // Паспорт: ищем подписи в первом столбце
+  const labelToKey = Object.fromEntries(PASSPORT_FIELDS.map(([k,l])=>[l.toLowerCase(),k]));
+  plan.forEach(r=>{
+    const k = labelToKey[S(r[0]).toLowerCase()];
+    if(k) out.passport[k] = k==="launch" ? anyToISO(r[1]) : S(r[1]);
+  });
+
+  // Этапы: строка-заголовок «№ | Этап | ...», далее до первой строки без названия этапа
+  const hdr = plan.findIndex(r=>S(r[0])==="№" && /этап/i.test(S(r[1])));
+  if(hdr >= 0){
+    out.stages = [];
+    const statusByName = Object.fromEntries(Object.entries(STATUSES).map(([k,v])=>[v.toLowerCase(),k]));
+    for(let i=hdr+1;i<plan.length;i++){
+      const r = plan[i];
+      if(/критерии/i.test(S(r[0]))) break;
+      if(!S(r[1])) continue;
+      out.stages.push({title:S(r[1]),content:S(r[2]),owner:S(r[3]),due:anyToISO(r[4]),deps:S(r[5])||"—",result:S(r[6]),doc:S(r[7]),status:statusByName[S(r[8]).toLowerCase()]||"todo"});
+    }
+  }
+
+  // Критерии и план возврата
+  const crit = plan.findIndex(r=>/критерии готовности/i.test(S(r[0])));
+  if(crit >= 0){
+    out.readiness = []; out.acceptance = [];
+    const rbByLabel = Object.fromEntries(ROLLBACK_FIELDS.map(([k,l])=>[l.toLowerCase(),k]));
+    for(let i=crit+1;i<plan.length;i++){
+      const r = plan[i];
+      const strip = t => ({text:t.replace(/\s*✓$/,""), done:/✓$/.test(t)});
+      if(S(r[1])) out.readiness.push(strip(S(r[1])));
+      if(S(r[4])) out.acceptance.push(strip(S(r[4])));
+      const rk = rbByLabel[S(r[6]).toLowerCase()];
+      if(rk) out.rollback[rk] = S(r[7]);
+    }
+  }
+
+  // Риски
+  const rk = rows("риск");
+  if(rk){
+    const h = rk.findIndex(r=>S(r[0])==="№" && /риск/i.test(S(r[1])));
+    if(h >= 0){
+      out.risks = [];
+      for(let i=h+1;i<rk.length;i++){
+        const r = rk[i]; if(!S(r[1])) continue;
+        out.risks.push({risk:S(r[1]),prob:S(r[2]),impact:S(r[3]),prevent:S(r[4]),action:S(r[5])});
+      }
+    }
+  }
+
+  // Проверка
+  const ch = rows("провер");
+  if(ch){
+    const h = ch.findIndex(r=>/^критерий$/i.test(S(r[0])));
+    if(h >= 0){
+      out.checks = []; out.remarks = [];
+      for(let i=h+1;i<ch.length;i++){
+        const r = ch[i], c = S(r[0]);
+        if(!c) continue;
+        let m;
+        if((m = c.match(/^замечание\s*(\d+)/i))){ (out.remarks[m[1]-1] ||= {remark:"",solution:""}).remark = S(r[1]); continue; }
+        if((m = c.match(/^решение по замечанию\s*(\d+)/i))){ (out.remarks[m[1]-1] ||= {remark:"",solution:""}).solution = S(r[1]); continue; }
+        out.checks.push({criterion:c,self:S(r[1]),peer:S(r[2]),comment:S(r[3])});
+      }
+      out.remarks = Array.from(out.remarks, x=>x||{remark:"",solution:""});
+    }
+  }
+  return out;
+}
+
+/* ============================ Старт ============================ */
+renderAll();
+try{
+  const t = localStorage.getItem(STORAGE_KEY+"-tab");
+  const b = t && document.querySelector(`#tabs button[data-tab="${t}"]`);
+  if(b) b.click();
+}catch(e){}
+</script>
+</body>
+</html>
